@@ -6,5 +6,5 @@ npm install --save-dev nodemon
 
 For the .env
 SUPABASE_URL = https://DB_URL.supabase.co
-SUPABASE_KEY = YOUR_DB_API
+SUPABASE_KEY = YOUR_DB_APIKEY
 PORT = 3000 or any you want
