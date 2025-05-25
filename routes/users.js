@@ -1,6 +1,5 @@
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
-const e = require('express');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
@@ -15,7 +14,68 @@ const router = express.Router();
 
 router.use(express.json());
 
-router.route('/')
+router.post('/register',async (req, res) => {
+    const { nombre, email, password } = req.body;
+    if (!nombre || !password || !email) {
+        return res.status(400).json({ error: 'Nombre, Password and email are required' });
+    }
+    try {
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    username: nombre,
+                },
+            }
+        });
+        if (error) {
+            console.error('Error creating usuario:', error);
+            return res.status(500).json({ error: error.message });
+        }
+        res.status(201).json({message: 'usuario created', user: data.user});
+    } catch (error) {
+        console.error('Error in /users POST:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});         
+
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and Password are required' });
+    }
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+        if (error) {
+            console.error('Error logging in usuario:', error);
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+        res.status(200).json({ message: 'usuario logged in', user: data.user, session: data.session });
+    } catch (error) {
+        console.error('Error in /users login:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.post('/logout', async (req, res) => {
+    try {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error('Error logging out usuario:', error);
+            return res.status(500).json({ error: 'Failed to log out usuario' });
+        }
+        res.status(200).json({ message: 'usuario logged out successfully' });
+    } catch (error) {
+        console.error('Error in /users logout:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+/*router.route('/')
     .get(async (req, res) => {
         const { Nombre, id } = req.body;
         if (!Nombre && !id) {
@@ -45,6 +105,15 @@ router.route('/')
             return res.status(400).json({ error: 'Nombre, Password and email are required' });
         }
         try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        username: nombre,
+                    },
+                }
+            });
             const { data, error } = await supabase
                 .from('usuarios')
                 .insert([{ 
@@ -57,7 +126,7 @@ router.route('/')
                 console.error('Error creating usuario:', error);
                 return res.status(500).json({ error: error.message });
             }
-            res.status(201).json({ id: data[0].id, nombre, message: 'usuario created' });
+            res.status(201).json({ uid: data[0], nombre, message: 'usuario created' });
         } catch (error) {
             console.error('Error in /users POST:', error);
             res.status(500).json({ error: 'Internal Server Error' });
@@ -118,7 +187,7 @@ router.route('/')
         }
         res.json({ message: 'usuario updated' });
     });
-
+*/
 
 
 

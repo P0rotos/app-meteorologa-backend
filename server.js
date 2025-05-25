@@ -7,8 +7,10 @@ app.get('/', (req, res) => {
 });
 
 const usersRouter = require('./routes/users');
+const weatherRouter = require('./routes/weather');
 
 app.use('/users', usersRouter);
+app.use('/weather', weatherRouter);
 
 const port = process.env.PORT || 3000;
 
