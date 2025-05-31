@@ -5,6 +5,8 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
+    console.log(supabaseUrl);
+    console.log(supabaseKey);
     console.error('SUPABASE_URL and SUPABASE_KEY must be defined in .env file');
     process.exit(1);
 }
@@ -71,6 +73,24 @@ router.post('/logout', async (req, res) => {
         res.status(200).json({ message: 'usuario logged out successfully' });
     } catch (error) {
         console.error('Error in /users logout:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.delete('/', async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+        return res.status(400).json({ error: 'ID is required' });
+    }
+    try {
+        const { error } = await supabase.auth.admin.deleteUser(id);
+        if (error) {
+            console.error('Error deleting usuario:', error);
+            return res.status(404).json({ error: error.message });
+        }
+        res.status(200).json({ message: 'usuario deleted Successfully' });
+    } catch (error) {
+        console.error('Error in /users DELETE:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
