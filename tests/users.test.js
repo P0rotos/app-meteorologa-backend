@@ -25,7 +25,6 @@ describe('Users Routes', () => {
             const response = await request(app)
                 .post('/users/register')
                 .send({ email: 'test@example.com' });
-
             expect(response.status).toBe(400);
             expect(response.body).toHaveProperty('error', 'Nombre, Password and email are required');
         });
@@ -65,7 +64,6 @@ describe('Users Routes', () => {
 
     describe('DELETE /users', () => {
         it('should delete an existing user', async () => {
-            // Now, attempt to delete the user
             const deleteResponse = await request(app)
                 .delete('/users')
                 .send({ id: userId });
