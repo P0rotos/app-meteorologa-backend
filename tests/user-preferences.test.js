@@ -71,8 +71,8 @@ const userPreferencesRouter = require('../routes/user-preferences');
                     max_temp: 10,
                     prefiere_soleado: true
                 })
-            .expect('Content-Type', /json/)
-            .expect(400);
+                .expect('Content-Type', /json/)
+                .expect(400);
 
             expect(res.body).toHaveProperty('error', 'min_temp no puede ser mayor que max_temp');
         });
@@ -98,15 +98,15 @@ const userPreferencesRouter = require('../routes/user-preferences');
             const res = await request(app)
                 .put('/user-preferences/')
                 .send({ min_temp: 10 })
-            .expect(404); 
+                .expect(404); 
         });
 
         it('should return 400 if no fields are provided on PUT', async () => {
             const res = await request(app)
                 .put(`/user-preferences/${testPreferenceId}`)
                 .send({})
-            .expect('Content-Type', /json/)
-            .expect(400);
+                .expect('Content-Type', /json/)
+                .expect(400);
 
             expect(res.body).toHaveProperty('error', 'Al menos un campo debe ser proporcionado para actualizar');
         });
@@ -115,8 +115,8 @@ const userPreferencesRouter = require('../routes/user-preferences');
             const res = await request(app)
                 .put(`/user-preferences/${testPreferenceId}`)
                 .send({ min_temp: 30, max_temp: 10 })
-            .expect('Content-Type', /json/)
-            .expect(400);
+                .expect('Content-Type', /json/)
+                .expect(400);
 
             expect(res.body).toHaveProperty('error', 'min_temp no puede ser mayor que max_temp');
         });
@@ -125,8 +125,8 @@ const userPreferencesRouter = require('../routes/user-preferences');
             const res = await request(app)
                 .put('/user-preferences/99999999')
                 .send({ min_temp: 10 })
-            .expect('Content-Type', /json/)
-            .expect(404);
+                .expect('Content-Type', /json/)
+                .expect(404);
 
             expect(res.body).toHaveProperty('error', 'Preferencia no encontrada');
         });
@@ -135,7 +135,7 @@ const userPreferencesRouter = require('../routes/user-preferences');
             const res = await request(app)
                 .delete(`/user-preferences/${testPreferenceId}`)
                 .expect('Content-Type', /json/)
-            .expect(200);
+                .expect(200);
 
             expect(res.body).toHaveProperty('message', 'Preferencia eliminada exitosamente');
         });
@@ -143,14 +143,14 @@ const userPreferencesRouter = require('../routes/user-preferences');
         it('should return 400 if ID is missing on DELETE', async () => {
             const res = await request(app)
                 .delete('/user-preferences/')
-            .expect(404);
+                .expect(404);
         });
 
         it('should return 404 if deleting a non-existent preference', async () => {
             const res = await request(app)
                 .delete('/user-preferences/99999999')
-            .expect('Content-Type', /json/)
-            .expect(404);
+                .expect('Content-Type', /json/)
+                .expect(404);
 
             expect(res.body).toHaveProperty('error', 'Preferencia no encontrada');
         });
