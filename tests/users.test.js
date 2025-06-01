@@ -1,7 +1,7 @@
 const request = require('supertest');
 const express = require('express');
 require('dotenv').config();
-const usersRouter = require('./routes/users');
+const usersRouter = require('../routes/users');
 
 const app = express();
 app.use(express.json());
@@ -62,6 +62,7 @@ describe('Users Routes', () => {
             expect(response.body).toHaveProperty('message', 'usuario logged out successfully');
         });
     });
+
     describe('DELETE /users', () => {
         it('should delete an existing user', async () => {
             // Now, attempt to delete the user
@@ -90,5 +91,5 @@ describe('Users Routes', () => {
             expect(response.status).toBe(400);
             expect(response.body).toHaveProperty('error', 'ID is required');
         });
-});
+    });
 });
