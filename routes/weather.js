@@ -16,7 +16,7 @@ const router = express.Router();
 
 router.use(express.json());
 
-router.get('/hourly', async (req, res) => {
+router.post('/hourly', async (req, res) => {
     const { lat, lon } = req.body;
     if (!lat || !lon) {
         return res.status(400).json({ error: 'Latitude and longitude are required' });
@@ -27,10 +27,14 @@ router.get('/hourly', async (req, res) => {
     if (!responseF.ok) {
         return res.status(responseF.status).json({ error: 'Error fetching data from weather API' });
     }
-    res.status(200).json(jsonF.list.slice(0, 7));
+    // Incluir información de la ciudad
+    res.status(200).json({
+        hourly: jsonF.list.slice(0, 7),
+        city: jsonF.city
+    });
 });
 
-router.get('/daily', async (req, res) => {
+router.post('/daily', async (req, res) => {
     const { lat, lon } = req.body;
     if (!lat || !lon) {
         return res.status(400).json({ error: 'Latitude and longitude are required' });
