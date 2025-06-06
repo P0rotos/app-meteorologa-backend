@@ -154,6 +154,44 @@ const userPreferencesRouter = require('../routes/user-preferences');
 
             expect(res.body).toHaveProperty('error', 'Preferencia no encontrada');
         });
+        
+        it('should filter preferences by user id', async () => {
+            const res = await request(app)
+                .get(`/user-preferences/filter/${testUserId}`)
+                .expect('Content-Type', /json/)
+                .expect(200);
 
+            expect(res.body).toHaveProperty('message', 'Preferencias filtradas exitosamente');
+            expect(res.body).toHaveProperty('preferences');
+            expect(Array.isArray(res.body.preferences)).toBe(true);
+        });
+
+        it('should filter preferences by user id and temperature', async () => {
+            const res = await request(app)
+                .get(`/user-preferences/filter/${testUserId}`)
+                .query({ temperatura: 20 })
+                .expect('Content-Type', /json/)
+                .expect(200);
+
+            expect(res.body).toHaveProperty('preferences');
+            expect(Array.isArray(res.body.preferences)).toBe(true);
+        });
+
+        it('should filter preferences by user id, temperature and climate', async () => {
+            const res = await request(app)
+                .get(`/user-preferences/filter/${testUserId}`)
+                .query({ temperatura: 20, clima: 'soleado' })
+                .expect('Content-Type', /json/)
+                .expect(200);
+
+            expect(res.body).toHaveProperty('preferences');
+            expect(Array.isArray(res.body.preferences)).toBe(true);
+        });
+
+        it('should return 500 if usuario_id is missing', async () => {
+            const res = await request(app)
+                .get('/user-preferences/filter/')
+                .expect(500); // Express will return 404 for missing param
+        });
 
     });

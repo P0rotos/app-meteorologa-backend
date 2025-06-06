@@ -50,14 +50,14 @@ router.post('/daily', async (req, res) => {
 });
 
 router.get('/cities', async (req, res) => {
-    const { city } = req.body;
+    const { city } = req.query;
     if( !city) {
         return res.status(400).json({ error: 'City is required' });
     }   
     try{
         const { data, error } = await supabase
             .from('ciudades')
-            .select('nombre')
+            .select('nombre, country')
             .ilike('nombre', `%${city}%`);
         
         if (error) {
@@ -72,15 +72,16 @@ router.get('/cities', async (req, res) => {
 });
 
 router.get('/cords', async (req, res) => {
-    const { city } = req.body;
-    if( !city) {
-        return res.status(400).json({ error: 'City is required' });
+    const { city, country } = req.query;
+    if( !city  ||  !country) {
+        return res.status(400).json({ error: 'City and Country are required' });
     }   
     try{
         const { data, error } = await supabase
             .from('ciudades')
-            .select('lat, lon')
-            .eq('nombre', city);
+            .select('*')
+            .eq('nombre', city)
+            .eq('country', country);
         if (error) {
             console.error('Error fetching coordinates:', error);
             return res.status(500).json({ error: 'Internal Server Error' });

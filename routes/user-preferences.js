@@ -49,6 +49,90 @@ router.get('/:usuario_id', async (req, res) => { // Obtener preferencias de usua
     }
 });
 
+router.get('/filter/:usuario_id', async (req, res) => {
+    const { usuario_id } = req.params;
+    const { temperatura, clima } = req.query;
+
+    if (usuario_id === null) {
+        return res.status(400).json({ error: 'ID de usuario es requerido' });
+    }
+
+    try {
+        let query = supabase
+            .from('actividad_usuario')
+            .select(`
+                *,
+                actividades (
+                    id,
+                    nombre,
+                    tipo,
+                    descripcion,
+                    min_temp,
+                    max_temp,
+                    prefiere_soleado,
+                    prefiere_nublado,
+                    prefiere_lluvia
+                )
+            `)
+            .eq('usuario_id', usuario_id);
+
+        // Filtrar por temperatura
+        if (temperatura && !isNaN(temperatura)) {
+            const temp = parseFloat(temperatura);
+            query = query
+                .lte('actividades.min_temp', temp)
+                .gte('actividades.max_temp', temp);
+        }
+
+        // Filtrar por clima
+        if (clima) {
+            const climaNormalizado = clima.toLowerCase();
+            switch (climaNormalizado) {
+                case 'soleado':
+                case 'despejado':
+                case 'clear':
+                    query = query.eq('actividades.prefiere_soleado', true);
+                    break;
+                case 'nublado':
+                case 'nubes':
+                case 'clouds':
+                case 'cloudy':
+                    query = query.eq('actividades.prefiere_nublado', true);
+                    break;
+                case 'lluvioso':
+                case 'lluvia':
+                case 'rain':
+                case 'rainy':
+                    query = query.eq('actividades.prefiere_lluvia', true);
+                    break;
+                default:
+                    // Si no coincide con ningún clima conocido, no aplicar filtro
+                    console.log(`Clima no reconocido: ${clima}`);
+            }
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+            console.error('Error filtering user preferences:', error);
+            return res.status(500).json({ error: 'Error al filtrar las preferencias del usuario' });
+        }
+
+        res.status(200).json({
+            message: 'Preferencias filtradas exitosamente',
+            filters: {
+                temperatura: temperatura ? parseFloat(temperatura) : null,
+                clima: clima || null
+            },
+            count: data.length,
+            preferences: data
+        });
+    } catch (error) {
+        console.error('Error in /user-preferences/filter/:usuario_id GET:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 
 router.post('/', async (req, res) => {//Agregar nueva actividad preferida
     const { 
