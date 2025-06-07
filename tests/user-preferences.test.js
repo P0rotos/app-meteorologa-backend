@@ -11,7 +11,7 @@ const userPreferencesRouter = require('../routes/user-preferences');
         let testPreferenceId;
 
         beforeAll(async () => {
-        testUserId = '2eb934d1-2641-468e-b31b-d6eca4a00a34';
+        testUserId = 'd06e675d-3616-4833-a606-4c7535cc78e1';
         });
 
         it('should fetch user preferences', async () => {
@@ -27,7 +27,7 @@ const userPreferencesRouter = require('../routes/user-preferences');
         it('should create a new user preference', async () => {
             const newPreference = {
                 usuario_id: testUserId,
-                actividad_id: '3',
+                actividad_id: '6',
                 min_temp: 10,
                 max_temp: 30,
                 prefiere_soleado: true,
@@ -50,7 +50,7 @@ const userPreferencesRouter = require('../routes/user-preferences');
             const res = await request(app)
                 .post('/user-preferences')
                 .send({
-                    actividad_id: '3',
+                    actividad_id: '6',
                     min_temp: 10,
                     max_temp: 30,
                     prefiere_soleado: true
@@ -66,7 +66,7 @@ const userPreferencesRouter = require('../routes/user-preferences');
                 .post('/user-preferences')
                 .send({
                     usuario_id: testUserId,
-                    actividad_id: '3',
+                    actividad_id: '6',
                     min_temp: 50,
                     max_temp: 10,
                     prefiere_soleado: true

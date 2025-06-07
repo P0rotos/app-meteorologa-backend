@@ -20,7 +20,7 @@ describe('Activities API', () => {
         });
 
         it('should fetch a single activity by ID', async () => {
-            const testActivityId = 1; // Replace with an actual test activity ID
+            const testActivityId = 6; // Replace with an actual test activity ID
 
             const res = await request(app)
                 .get(`/activities/${testActivityId}`)
