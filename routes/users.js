@@ -77,6 +77,35 @@ router.post('/logout', async (req, res) => {
     }
 });
 
+router.put('/updatecity/:id', async (req, res) => {
+    const { id } = req.params;
+    const { city } = req.body;
+    if (!id) {
+        return res.status(400).json({ error: 'ID is required' });
+    }
+    if (city === undefine) {
+        return res.status(400).json({ error: 'city is required' });
+    }
+    try {
+        const { error } = await supabase.auth.updateUser({
+            id,
+            options: {
+                data: {
+                    city: city,
+                },
+            }
+        });
+        if (error) {
+            console.error('Error updating usuario city:', error);
+            return res.status(500).json({ error: error.message });
+        }
+        res.status(200).json({ message: 'usuario city updated' });
+    } catch (error) {
+        console.error('Error in /users PUT:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 router.delete('/', async (req, res) => {
     const { id } = req.body;
     if (!id) {
