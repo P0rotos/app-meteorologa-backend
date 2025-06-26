@@ -52,6 +52,52 @@ describe('Users Routes', () => {
         });
     });
 
+    describe('PUT /users/updatecity/:id', () => {
+        it('should update the city and country for a user', async () => {
+            const response = await request(app)
+                .put(`/users/updatecity/${userId}`)
+                .send({ city: 'Valparaiso', country: 'Chile' });
+
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('message', 'usuario city updated');
+        });
+
+        it('should return 400 if city is not provided', async () => {
+            const response = await request(app)
+                .put(`/users/updatecity/${userId}`)
+                .send({ country: 'Chile' });
+
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty('error', 'city is required');
+        });
+
+        it('should return 400 if country is not provided', async () => {
+            const response = await request(app)
+                .put(`/users/updatecity/${userId}`)
+                .send({ city: 'Santiago' });
+
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty('error', 'city is required');
+        });
+
+        it('should return 404 if id is not provided', async () => {
+            const response = await request(app)
+                .put('/users/updatecity/')
+                .send({ city: 'Valparaiso', country: 'Chile' });
+
+            expect(response.status).toBe(404); // Express will return 404 for missing param
+        });
+
+        it('should return Valparaiso y Chile', async () => {
+            const response = await request(app)
+                .get('/users/getUser')
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('user');
+            expect(response.body.user.user_metadata).toHaveProperty('city', 'Valparaiso');
+            expect(response.body.user.user_metadata).toHaveProperty('country', 'Chile');
+        });
+    });
+
     describe('POST /users/logout', () => {
         it('should log out the user', async () => {
             const response = await request(app)

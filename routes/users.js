@@ -16,6 +16,20 @@ const router = express.Router();
 
 router.use(express.json());
 
+router.get('/getUser',async (req, res) => {
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error){
+            console.error('Error fetching user:', error);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+        res.status(200).json({ user });
+    } catch (error) {
+        console.error('Error in /users GET:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 router.post('/register',async (req, res) => {
     const { nombre, email, password } = req.body;
     if (!nombre || !password || !email) {
@@ -79,20 +93,19 @@ router.post('/logout', async (req, res) => {
 
 router.put('/updatecity/:id', async (req, res) => {
     const { id } = req.params;
-    const { city } = req.body;
+    const { city, country } = req.body;
     if (!id) {
         return res.status(400).json({ error: 'ID is required' });
     }
-    if (city === undefine) {
+    if (city === undefined || country === undefined) {
         return res.status(400).json({ error: 'city is required' });
     }
     try {
         const { error } = await supabase.auth.updateUser({
             id,
-            options: {
-                data: {
-                    city: city,
-                },
+            data: {
+                city: city,
+                country: country,
             }
         });
         if (error) {
