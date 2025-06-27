@@ -240,4 +240,70 @@ router.post('/recommend', async (req, res) => {
     }
 });
 
+router.get('/unavailable/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        // Obtener las preferencias del usuario
+        const { data: preferencias, error: errorPreferencias } = await supabase
+            .from('preferencias_usuario')
+            .select('actividad_id')
+            .eq('usuario_id', userId);
+
+        if (errorPreferencias) {
+            console.error('Error al obtener preferencias:', errorPreferencias);
+            return res.status(500).json({ error: 'Error al obtener preferencias del usuario' });
+        }
+
+        const actividadIds = preferencias.map(pref => pref.actividad_id);
+
+        if (actividadIds.length === 0) {
+            return res.status(200).json({ message: 'El usuario no tiene actividades preferidas', activities: [] });
+        }
+
+        // Obtener clima actual
+        const { data: clima, error: errorClima } = await supabase
+            .from('forecast_diario')
+            .select('temperatura_actual, clima_actual')
+            .order('fecha', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (errorClima || !clima) {
+            console.error('Error al obtener clima actual:', errorClima);
+            return res.status(500).json({ error: 'No se pudo obtener el clima actual' });
+        }
+
+        const { temperatura_actual, clima_actual } = clima;
+
+        // Obtener actividades preferidas
+        const { data: actividades, error: errorActividades } = await supabase
+            .from('actividades')
+            .select('*')
+            .in('id', actividadIds);
+
+        if (errorActividades) {
+            console.error('Error al obtener actividades:', errorActividades);
+            return res.status(500).json({ error: 'Error al obtener actividades del usuario' });
+        }
+
+        // Filtrar actividades no recomendadas
+        const actividadesNoRecomendadas = actividades.filter(act => {
+            return (
+                temperatura_actual < act.temperatura_min ||
+                temperatura_actual > act.temperatura_max ||
+                (act.clima_recomendado && act.clima_recomendado !== clima_actual)
+            );
+        });
+
+        res.status(200).json({
+            message: 'Actividades no recomendadas debido al clima',
+            activities: actividadesNoRecomendadas
+        });
+    } catch (error) {
+        console.error('Error en /unavailable:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 module.exports = router;
