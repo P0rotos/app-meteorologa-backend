@@ -18,14 +18,19 @@ const usersRouter = require('./routes/users');
 const weatherRouter = require('./routes/weather');
 const activitiesRouter = require('./routes/activities');
 const userPreferencesRouter = require('./routes/user-preferences');
+const recommendationRouter = require('./routes/recommendation');
+
+
 
 app.use('/users', usersRouter);
 app.use('/weather', weatherRouter);
 app.use('/activities', activitiesRouter);
 app.use('/user-preferences', userPreferencesRouter);
+app.use('/recommendation', recommendationRouter);
 
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
    });
+module.exports = app;

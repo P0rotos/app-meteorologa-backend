@@ -104,3 +104,24 @@ describe('Activities API', () => {
         });
     });
 });
+
+const request = require('supertest');
+const app = require('../server');
+
+describe('GET /activities/unavailable/:userId', () => {
+    it('debería retornar actividades no recomendadas', async () => {
+        const userId = 'test-user-id'; // reemplaza con un id válido
+        const res = await request(app).get(`/activities/unavailable/${userId}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(Array.isArray(res.body.activities)).toBe(true);
+    });
+
+    it('debería retornar un arreglo vacío si el usuario no tiene preferencias', async () => {
+        const userId = 'usuario-sin-preferencias'; // reemplaza con un id sin preferencias
+        const res = await request(app).get(`/activities/unavailable/${userId}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body.activities.length).toBe(0);
+    });
+});

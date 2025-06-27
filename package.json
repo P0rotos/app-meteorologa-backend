@@ -4,8 +4,9 @@
   "main": "index.js",
   "scripts": {
     "devStart": "nodemon server.js",
-    "testStart": "jest"
-  },
+    "testStart": "jest" ,
+    "test": "jest"
+   },
   "keywords": [],
   "author": "",
   "license": "ISC",
