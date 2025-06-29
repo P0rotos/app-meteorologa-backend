@@ -93,7 +93,7 @@ router.post('/logout', async (req, res) => {
 
 router.put('/updatecity/:id', async (req, res) => {
     const { id } = req.params;
-    const { city, country } = req.body;
+    const { lat, lon, city } = req.body;
     if (!id) {
         return res.status(400).json({ error: 'ID is required' });
     }
@@ -104,8 +104,9 @@ router.put('/updatecity/:id', async (req, res) => {
         const { error } = await supabase.auth.updateUser({
             id,
             data: {
+                lat: lat,
+                lon: lon,
                 city: city,
-                country: country,
             }
         });
         if (error) {
