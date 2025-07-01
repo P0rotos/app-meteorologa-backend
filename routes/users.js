@@ -70,7 +70,19 @@ router.post('/login', async (req, res) => {
             console.error('Error logging in usuario:', error);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        res.status(200).json({ message: 'usuario logged in', user: data.user, session: data.session });
+        
+        // Obtener ciudad favorita desde metadata
+        let favoriteCity = null;
+        if (data.user.user_metadata && data.user.user_metadata.favorite_city) {
+            favoriteCity = data.user.user_metadata.favorite_city;
+        }
+        
+        res.status(200).json({ 
+            message: 'usuario logged in', 
+            user: data.user, 
+            session: data.session,
+            favoriteCity
+        });
     } catch (error) {
         console.error('Error in /users login:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -91,31 +103,76 @@ router.post('/logout', async (req, res) => {
     }
 });
 
-router.put('/updatecity/:id', async (req, res) => {
+
+// Establecer ciudad favorita del usuario
+router.put('/favorite-city/:id', async (req, res) => {
     const { id } = req.params;
-    const { lat, lon, city } = req.body;
+    const { ciudad_id } = req.body;
+    
     if (!id) {
         return res.status(400).json({ error: 'ID is required' });
     }
-    if (city === undefined || country === undefined) {
-        return res.status(400).json({ error: 'city is required' });
+    if (!ciudad_id) {
+        return res.status(400).json({ error: 'ciudad_id is required' });
     }
+    
     try {
-        const { error } = await supabase.auth.updateUser({
+        // Verificar que la ciudad existe
+        const { data: ciudad, error: ciudadError } = await supabase
+            .from('ciudades')
+            .select('*')
+            .eq('id', ciudad_id)
+            .single();
+            
+        if (ciudadError || !ciudad) {
+            return res.status(404).json({ error: 'Ciudad not found' });
+        }
+        
+        // Obtener metadata actual del usuario
+        const { data: currentUser, error: getUserError } = await supabase.auth.admin.getUserById(id);
+        
+        if (getUserError) {
+            console.error('Error getting current user:', getUserError);
+            return res.status(500).json({ error: 'Error getting user data' });
+        }
+        
+        // Preservar metadata existente y agregar ciudad favorita
+        const existingMetadata = currentUser.user.user_metadata || {};
+        
+        // Actualizar metadata del usuario en auth preservando datos existentes
+        const { data: userData, error } = await supabase.auth.admin.updateUserById(
             id,
-            data: {
-                lat: lat,
-                lon: lon,
-                city: city,
+            {
+                user_metadata: {
+                    ...existingMetadata,
+                    favorite_city_id: ciudad_id,
+                    favorite_city: {
+                        id: ciudad.id,
+                        nombre: ciudad.nombre,
+                        lat: ciudad.lat,
+                        lon: ciudad.lon,
+                        country: ciudad.country
+                    }
+                }
             }
-        });
+        );
+            
         if (error) {
-            console.error('Error updating usuario city:', error);
+            console.error('Error updating user favorite city metadata:', error);
             return res.status(500).json({ error: error.message });
         }
-        res.status(200).json({ message: 'usuario city updated' });
+        
+        if (!userData.user) {
+            return res.status(404).json({ error: 'Usuario not found' });
+        }
+        
+        res.status(200).json({ 
+            message: 'Favorite city updated successfully',
+            user: userData.user,
+            favoriteCity: ciudad
+        });
     } catch (error) {
-        console.error('Error in /users PUT:', error);
+        console.error('Error in /users/favorite-city PUT:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });

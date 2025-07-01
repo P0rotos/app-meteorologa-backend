@@ -57,7 +57,7 @@ router.get('/cities', async (req, res) => {
     try{
         const { data, error } = await supabase
             .from('ciudades')
-            .select('nombre, country')
+            .select('id, nombre, country, lat, lon')
             .ilike('nombre', `%${city}%`);
         
         if (error) {
