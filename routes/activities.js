@@ -306,4 +306,73 @@ router.get('/unavailable/:userId', async (req, res) => {
     }
 });
 
+router.get('/notrecommended/:usuario_id', async (req, res) => {
+    const { temperatura, clima } = req.query;
+
+    if (!temperatura || !clima) {
+        return res.status(400).json({ 
+            error: 'Se requiere temperatura y clima para mostrar no recomendadas' 
+        });
+    }
+
+    try {
+        const temp = parseFloat(temperatura);
+        const climaNormalizado = clima.toLowerCase();
+
+        let climaField = null;
+        switch (climaNormalizado) {
+            case 'soleado':
+            case 'despejado':
+            case 'clear':
+                climaField = 'prefiere_soleado';
+                break;
+            case 'nublado':
+            case 'nubes':
+            case 'clouds':
+            case 'cloudy':
+                climaField = 'prefiere_nublado';
+                break;
+            case 'lluvioso':
+            case 'lluvia':
+            case 'rain':
+            case 'rainy':
+                climaField = 'prefiere_lluvia';
+                break;
+            default:
+                climaField = null;
+        }
+
+        let filter = `(min_temp.gt.${temp},max_temp.lt.${temp}`;
+        if (climaField) {
+            filter += `,${climaField}.eq.false`;
+        }
+        filter += ')';
+
+        let query = supabase
+            .from('actividades')
+            .select('*')
+            .or(filter);
+
+        const { data, error } = await query;
+
+        if (error) {
+            console.error('Error fetching not recommended activities:', error);
+            return res.status(500).json({ error: 'Error al obtener actividades no recomendadas' });
+        }
+
+        res.status(200).json({
+            message: 'Actividades no recomendadas obtenidas exitosamente',
+            condiciones: {
+                temperatura: temp,
+                clima: clima
+            },
+            notRecommended: data,
+            total: data.length
+        });
+    } catch (error) {
+        console.error('Error in /user-preferences/notrecommended/:usuario_id GET:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 module.exports = router;
