@@ -139,16 +139,16 @@ router.get('/notrecommended/:usuario_id', async (req, res) => {
         }
         let filter = '';
         if (temperatura && !isNaN(temperatura)){
-            let filter = `min_temp.gt.${temp},max_temp.lt.${temp}`;
-            if (climaField) {
+            filter = `min_temp.gt.${temp},max_temp.lt.${temp}`;
+            if (clima) {
                 filter += `,${climaField}.eq.false`;
             }
         }else{
-            if (climaField) {
+            if (clima) {
                 filter = `${climaField}.eq.false`;
             }
         }
-        
+        console.log('climaField:', climaField, 'filter:', filter);
         let query = supabase
             .from('actividad_usuario')
             .select(`
