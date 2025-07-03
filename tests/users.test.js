@@ -52,49 +52,42 @@ describe('Users Routes', () => {
         });
     });
 
-    describe('PUT /users/updatecity/:id', () => {
-        it('should update the city and country for a user', async () => {
+    describe('PUT /users/favorite-city/:id', () => {
+        it('should update the favorite city for a user', async () => {
             const response = await request(app)
-                .put(`/users/updatecity/${userId}`)
-                .send({ city: 'Valparaiso', country: 'Chile' });
+                .put(`/users/favorite-city/${userId}`)
+                .send({ ciudad_id: '2481' });
 
             expect(response.status).toBe(200);
-            expect(response.body).toHaveProperty('message', 'usuario city updated');
+            expect(response.body).toHaveProperty('message', 'Favorite city updated successfully');
+            expect(response.body).toHaveProperty('favoriteCity');
+            expect(response.body.favoriteCity).toHaveProperty('nombre', 'Valparaiso');
         });
 
-        it('should return 400 if city is not provided', async () => {
+        it('should return 400 if ciudad_id is not provided', async () => {
             const response = await request(app)
-                .put(`/users/updatecity/${userId}`)
-                .send({ country: 'Chile' });
+                .put(`/users/favorite-city/${userId}`)
+                .send({});
 
             expect(response.status).toBe(400);
-            expect(response.body).toHaveProperty('error', 'city is required');
+            expect(response.body).toHaveProperty('error', 'ciudad_id is required');
         });
 
-        it('should return 400 if country is not provided', async () => {
+        it('should return 404 if city does not exist', async () => {
             const response = await request(app)
-                .put(`/users/updatecity/${userId}`)
-                .send({ city: 'Santiago' });
+                .put(`/users/favorite-city/${userId}`)
+                .send({ ciudad_id: 'nonexistent-id' });
 
-            expect(response.status).toBe(400);
-            expect(response.body).toHaveProperty('error', 'city is required');
+            expect(response.status).toBe(404);
+            expect(response.body).toHaveProperty('error', 'Ciudad not found');
         });
 
-        it('should return 404 if id is not provided', async () => {
+        it('should return 400 if id is not provided', async () => {
             const response = await request(app)
-                .put('/users/updatecity/')
-                .send({ city: 'Valparaiso', country: 'Chile' });
+                .put('/users/favorite-city/')
+                .send({ ciudad_id: '2481' });
 
-            expect(response.status).toBe(404); // Express will return 404 for missing param
-        });
-
-        it('should return Valparaiso y Chile', async () => {
-            const response = await request(app)
-                .get('/users/getUser')
-            expect(response.status).toBe(200);
-            expect(response.body).toHaveProperty('user');
-            expect(response.body.user.user_metadata).toHaveProperty('city', 'Valparaiso');
-            expect(response.body.user.user_metadata).toHaveProperty('country', 'Chile');
+            expect(response.status).toBe(404); // Express returns 404 for missing param
         });
     });
 

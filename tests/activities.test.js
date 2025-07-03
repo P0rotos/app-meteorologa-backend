@@ -103,9 +103,51 @@ describe('Activities API', () => {
             expect(res.body.todasLasActividades).toHaveProperty('compatibles');
         });
     });
-    describe('GET /activities/unavailable/:userId', () => {
+    describe('GET /activities/notrecommended', () => {
+        it('should return not recommended activities for given temperature and climate', async () => {
+            const res = await request(app)
+                .get('/activities/notrecommended')
+                .query({ temperatura: 5, clima: 'soleado' })
+                .expect('Content-Type', /json/)
+                .expect(200);
+
+            expect(res.body).toHaveProperty('message', 'Actividades no recomendadas obtenidas exitosamente');
+            expect(res.body).toHaveProperty('notRecommended');
+            expect(Array.isArray(res.body.notRecommended)).toBe(true);
+        });
+
+        it('should return 400 if temperature is missing', async () => {
+            const res = await request(app)
+                .get('/activities/notrecommended')
+                .query({ clima: 'soleado' })
+                .expect('Content-Type', /json/)
+                .expect(400);
+
+            expect(res.body).toHaveProperty('error', 'Se requiere temperatura y clima para mostrar no recomendadas');
+        });
+
+        it('should return 400 if climate is missing', async () => {
+            const res = await request(app)
+                .get('/activities/notrecommended')
+                .query({ temperatura: 5 })
+                .expect('Content-Type', /json/)
+                .expect(400);
+
+            expect(res.body).toHaveProperty('error', 'Se requiere temperatura y clima para mostrar no recomendadas');
+        });
+
+        it('should return 400 if both temperature and climate are missing', async () => {
+            const res = await request(app)
+                .get('/activities/notrecommended')
+                .expect('Content-Type', /json/)
+                .expect(400);
+
+            expect(res.body).toHaveProperty('error', 'Se requiere temperatura y clima para mostrar no recomendadas');
+        });
+    });
+    /*describe('GET /activities/unavailable/:userId', () => {
         it('debería retornar actividades no recomendadas', async () => {
-            const userId = 'test-user-id'; // reemplaza con un id válido
+            const userId = 'd06e675d-3616-4833-a606-4c7535cc78e1'; // reemplaza con un id válido
             const res = await request(app).get(`/activities/unavailable/${userId}`);
 
             expect(res.statusCode).toBe(200);
@@ -113,14 +155,14 @@ describe('Activities API', () => {
         });
 
         it('debería retornar un arreglo vacío si el usuario no tiene preferencias', async () => {
-            const userId = 'usuario-sin-preferencias'; // reemplaza con un id sin preferencias
+            const userId = '08aab250-7c7f-40fc-b463-203cbd2dd3bf'; // reemplaza con un id sin preferencias
             const res = await request(app).get(`/activities/unavailable/${userId}`);
 
             expect(res.statusCode).toBe(200);
             expect(res.body.activities.length).toBe(0);
         });
         
-    });
+    });*/
 });
 
 

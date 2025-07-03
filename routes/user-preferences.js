@@ -14,41 +14,6 @@ const router = express.Router();
 
 router.use(express.json());
 
-router.get('/:usuario_id', async (req, res) => { // Obtener preferencias de usuario por ID
-    const { usuario_id } = req.params;
-
-    if (!usuario_id) {
-        return res.status(400).json({ error: 'ID de usuario es requerido' });
-    }
-
-    try {
-        const { data, error } = await supabase
-            .from('actividad_usuario')
-            .select(`
-                *,
-                actividades (
-                    id,
-                    nombre,
-                    tipo
-                )
-            `)
-            .eq('usuario_id', usuario_id);
-
-        if (error) {
-            console.error('Error fetching user preferences:', error);
-            return res.status(500).json({ error: 'Error al obtener las preferencias del usuario' });
-        }
-
-        res.status(200).json({
-            message: 'Preferencias obtenidas exitosamente',
-            preferences: data
-        });
-    } catch (error) {
-        console.error('Error in /user-preferences/:usuario_id GET:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-});
-
 router.get('/filter/:usuario_id', async (req, res) => {
     const { usuario_id } = req.params;
     const { temperatura, clima } = req.query;
@@ -137,15 +102,19 @@ router.get('/notrecommended/:usuario_id', async (req, res) => {
     const { usuario_id } = req.params;
     const { temperatura, clima } = req.query;
 
-    if (usuario_id === null) {
+    if (!usuario_id) {
         return res.status(400).json({ error: 'ID de usuario es requerido' });
+    }
+
+    if (!temperatura && !clima) {
+        return res.status(400).json({ error: 'Debe proporcionar al menos un filtro: temperatura o clima' });
     }
 
     try {
         const temp = parseFloat(temperatura);
-        const climaNormalizado = clima.toLowerCase();
         let climaField = null;
         if(clima){
+            const climaNormalizado = clima.toLowerCase();
             switch (climaNormalizado) {
                 case 'soleado':
                 case 'despejado':
@@ -170,14 +139,13 @@ router.get('/notrecommended/:usuario_id', async (req, res) => {
         }
         let filter = '';
         if (temperatura && !isNaN(temperatura)){
-            let filter = `(min_temp.gt.${temp},max_temp.lt.${temp}`;
+            let filter = `min_temp.gt.${temp},max_temp.lt.${temp}`;
             if (climaField) {
                 filter += `,${climaField}.eq.false`;
             }
-            filter += ')';
         }else{
             if (climaField) {
-                filter = `(${climaField}.eq.false)`;
+                filter = `${climaField}.eq.false`;
             }
         }
         
@@ -198,7 +166,10 @@ router.get('/notrecommended/:usuario_id', async (req, res) => {
                 )
             `)
             .eq('usuario_id', usuario_id)
-            .or(filter);
+        
+        if (filter) {
+            query = query.or(filter);
+        }
 
         const { data, error } = await query;
 
@@ -222,6 +193,40 @@ router.get('/notrecommended/:usuario_id', async (req, res) => {
     }
 });
 
+router.get('/:usuario_id', async (req, res) => { // Obtener preferencias de usuario por ID
+    const { usuario_id } = req.params;
+
+    if (!usuario_id) {
+        return res.status(400).json({ error: 'ID de usuario es requerido' });
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('actividad_usuario')
+            .select(`
+                *,
+                actividades (
+                    id,
+                    nombre,
+                    tipo
+                )
+            `)
+            .eq('usuario_id', usuario_id);
+
+        if (error) {
+            console.error('Error fetching user preferences:', error);
+            return res.status(500).json({ error: 'Error al obtener las preferencias del usuario' });
+        }
+
+        res.status(200).json({
+            message: 'Preferencias obtenidas exitosamente',
+            preferences: data
+        });
+    } catch (error) {
+        console.error('Error in /user-preferences/:usuario_id GET:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
 
 router.post('/', async (req, res) => {//Agregar nueva actividad preferida
     const { 
@@ -308,7 +313,6 @@ router.post('/', async (req, res) => {//Agregar nueva actividad preferida
     }
 });
 
-
 router.put('/:id', async (req, res) => {//Actualizar preferencia existente
     const { id } = req.params;
     const { 
@@ -381,7 +385,6 @@ router.put('/:id', async (req, res) => {//Actualizar preferencia existente
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
-
 
 router.delete('/:id', async (req, res) => {//Eliminar preferencia
     const { id } = req.params;

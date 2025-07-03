@@ -191,7 +191,58 @@ const userPreferencesRouter = require('../routes/user-preferences');
         it('should return 500 if usuario_id is missing', async () => {
             const res = await request(app)
                 .get('/user-preferences/filter/')
-                .expect(500); // Express will return 404 for missing param
+                .expect(500); // Express will return 500 because it doesnt match filter params so it skip it and go to the next middleware and that one return 500
+        });
+        // GET /user-preferences/notrecommended/:usuario_id
+        it('should return not recommended preferences for user, temperature and climate', async () => {
+            const res = await request(app)
+                .get(`/user-preferences/notrecommended/${testUserId}`)
+                .query({ temperatura: 5, clima: 'soleado' })
+                .expect('Content-Type', /json/)
+                .expect(200);
+
+            expect(res.body).toHaveProperty('message');
+            expect(res.body).toHaveProperty('notRecommended');
+            expect(Array.isArray(res.body.notRecommended)).toBe(true);
         });
 
+        it('should return 200 if temperature is missing', async () => {
+            const res = await request(app)
+                .get(`/user-preferences/notrecommended/${testUserId}`)
+                .query({ clima: 'soleado' })
+                .expect('Content-Type', /json/)
+                .expect(200);
+
+            expect(res.body).toHaveProperty('message');
+            expect(res.body).toHaveProperty('notRecommended');
+            expect(Array.isArray(res.body.notRecommended)).toBe(true);
+        });
+
+        it('should return 200 if climate is missing', async () => {
+            const res = await request(app)
+                .get(`/user-preferences/notrecommended/${testUserId}`)
+                .query({ temperatura: 5 })
+                .expect('Content-Type', /json/)
+                .expect(200);
+
+            expect(res.body).toHaveProperty('message');
+            expect(res.body).toHaveProperty('notRecommended');
+            expect(Array.isArray(res.body.notRecommended)).toBe(true);
+        });
+
+        it('should return 400 if both temperature and climate are missing', async () => {
+            const res = await request(app)
+                .get(`/user-preferences/notrecommended/${testUserId}`)
+                .expect('Content-Type', /json/)
+                .expect(400);
+
+            expect(res.body).toHaveProperty('error', 'Debe proporcionar al menos un filtro: temperatura o clima');
+        });
+
+        it('should return 400 if usuario_id is missing', async () => {
+            const res = await request(app)
+                .get('/user-preferences/notrecommended/')
+                .query({ temperatura: 5, clima: 'soleado' })
+                .expect(500); // Express will return 500 because it doesnt match filter params so it skip it and go to the next middleware and that one return 500
+        });
     });

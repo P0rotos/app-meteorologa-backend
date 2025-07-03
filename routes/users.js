@@ -104,7 +104,7 @@ router.post('/logout', async (req, res) => {
 });
 
 
-// Establecer ciudad favorita del usuario
+// Establecer ciudad favorita del usuario 
 router.put('/favorite-city/:id', async (req, res) => {
     const { id } = req.params;
     const { ciudad_id } = req.body;
