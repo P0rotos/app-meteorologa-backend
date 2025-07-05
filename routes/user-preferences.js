@@ -45,8 +45,8 @@ router.get('/filter/:usuario_id', async (req, res) => {
         if (temperatura && !isNaN(temperatura)) {
             const temp = parseFloat(temperatura);
             query = query
-                .lte('actividades.min_temp', temp)
-                .gte('actividades.max_temp', temp);
+                .lte('min_temp', temp)
+                .gte('max_temp', temp);
         }
 
         // Filtrar por clima
@@ -56,19 +56,19 @@ router.get('/filter/:usuario_id', async (req, res) => {
                 case 'soleado':
                 case 'despejado':
                 case 'clear':
-                    query = query.eq('actividades.prefiere_soleado', true);
+                    query = query.eq('prefiere_soleado', true);
                     break;
                 case 'nublado':
                 case 'nubes':
                 case 'clouds':
                 case 'cloudy':
-                    query = query.eq('actividades.prefiere_nublado', true);
+                    query = query.eq('prefiere_nublado', true);
                     break;
                 case 'lluvioso':
                 case 'lluvia':
                 case 'rain':
                 case 'rainy':
-                    query = query.eq('actividades.prefiere_lluvia', true);
+                    query = query.eq('prefiere_lluvia', true);
                     break;
                 default:
                     // Si no coincide con ningún clima conocido, no aplicar filtro
@@ -208,7 +208,8 @@ router.get('/:usuario_id', async (req, res) => { // Obtener preferencias de usua
                 actividades (
                     id,
                     nombre,
-                    tipo
+                    tipo,
+                    descripcion
                 )
             `)
             .eq('usuario_id', usuario_id);
