@@ -170,6 +170,7 @@ router.get('/notrecommended', async (req, res) => {
     }
 });
 
+
 router.get('/:id', async (req, res) => { //Obtener una actividad por ID
     const { id } = req.params;
 

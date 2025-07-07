@@ -18,11 +18,13 @@ const usersRouter = require('./routes/users');
 const weatherRouter = require('./routes/weather');
 const activitiesRouter = require('./routes/activities');
 const userPreferencesRouter = require('./routes/user-preferences');
+const actividadesPersonalizadasRouter = require('./routes/actividades-personalizadas');
 
 app.use('/users', usersRouter);
 app.use('/weather', weatherRouter);
 app.use('/activities', activitiesRouter);
 app.use('/user-preferences', userPreferencesRouter);
+app.use('/actividades-personalizadas', actividadesPersonalizadasRouter);
 
 const port = process.env.PORT || 3000;
 
